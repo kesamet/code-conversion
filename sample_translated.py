@@ -1,3 +1,9 @@
+from src.utils.spark_conf import get_spark_sql_context
+
+_, sql_context = get_spark_sql_context(
+    app_name="my_app"
+)
+
 """[converted]
 %LET _DATE = &SYSDATE9.;
 %put &_DATE;
@@ -8,7 +14,7 @@ options obs = max compress = yes SYMBOLGEN MPRINT MLOGIC NOTHREADS;
 %put &output_path.;
 %let data = &sysdata9.;
 """
-spark.sql("""
+sql_context.sql("""
 -- LET _DATE = &SYSDATE9.;
 -- PUT &_DATE;
 
@@ -27,7 +33,7 @@ spark.sql("""
 proc printto log = '&log_path./_XXPNEB_&date..log';
 run;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE log (
   log_path VARCHAR(255),
   date DATE
@@ -46,7 +52,7 @@ Libname output '&output_path.';
 LIBNAME RC '/gesadbcs/data/kfhd/OUTPUT/'
 options compress=yes;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE LIBRARY OUTLIB
 LOCATION '/gesadbcs/data/cbeu/OUTPUT/'
 OPTIONS (LOCK='outlib.ne_aaxd', LOCK='outlib.iynmxxln');
@@ -74,7 +80,7 @@ OPTIONS (COMPRESS=YES);
         %end;
 %mend conn;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE PROC conn AS
 BEGIN
     DECLARE crnidty INT;
@@ -119,7 +125,7 @@ END;
 %global nMA_StoS SA0SOAFF;
 %let run_date = today();
 """
-spark.sql("""
+sql_context.sql("""
 CREATE MACRO NMN(OFFSET)
 
 SET GLOBAL nMA_StoS = SA0SOAFF;
@@ -149,7 +155,7 @@ data _null_;
         call symput('syear', put(intnx('year', input('&date.', yymmdd8.), 0, 'begin'), date9.));
 run;
 """
-spark.sql("""
+sql_context.sql("""
 -- Create a temporary table with the following SAS code:
 
 CREATE TABLE _null_ (
@@ -230,7 +236,7 @@ SET @syear = SUBSTRING(INPUTN(@DATE, YYMMDD8.), 1, 4);
 %end;
 %mend;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE PROCEDURE teolodap()
 BEGIN
   DECLARE STARTDT, ENDDT;
@@ -248,7 +254,7 @@ END;
 %teolodap();
 %put &DATE9., &MD., &STARTDT., &ENDDT.;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT
   DATE9,
   MD,
@@ -265,7 +271,7 @@ PROC SQL;
     HAVING E_DIFF = max(E_DIFF);
 QUIT;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT DISTINCT E_DIFF, IEMRD_T
 INTO :STE1T, :TFREX_
 FROM TERADATA.EASATISN
@@ -279,7 +285,7 @@ HAVING E_DIFF = MAX(E_DIFF);
 %LET TLOHDSEH = 8000000/&TFREX_.;
 %LET GROIBECD = 'GCG', 'GAC', 'API';
 """
-spark.sql("""
+sql_context.sql("""
 SELECT 
   estt1,
   TFREX_,
@@ -295,7 +301,7 @@ PROC IMPORT DATAFILE = '%SYSFUNC(PATHNAME(TRANSCDE))/abc.txt' DBMS=MDL OUT=ONSEA
     GUESSINGROWS=1000;
 RUN;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE ONSEASON_
 (
     SEASON_ID INT,
@@ -315,7 +321,7 @@ PROC IMPORT DATAFILE = '%SYSFUNC(PATHNAME(TRANSCDE))/fdsgfg.xlsx' DBMS=xlsx
     SHEET='toaincrs MXC_od';
 RUN;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT *
 FROM OCTSR_X
 WHERE SHEET = 'toaincrs MXC_od';
@@ -327,7 +333,7 @@ PROC IMPORT DATAFILE = '%SYSFUNC(PATHNAME(TRANSCDE))/fdsgfg.xlsx' DBMS=xlsx
     SHEET='toaincrs Cdeo';
 RUN;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT *
 FROM OCTSR_X
 WHERE SHEET = 'toaincrs Cdeo';
@@ -337,7 +343,7 @@ WHERE SHEET = 'toaincrs Cdeo';
 proc import datafile='/sgandm/asegnr/CFDL/FHRKA.xlsx'
 out=W_CERCOI replace dbms='XLSX'; quit;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE W_CERCOI (
   _NAME_ varchar(255),
   _VALUE_ varchar(255)
@@ -355,7 +361,7 @@ WITH (
 %MACRO INS_DATA(TST_D, END_DT, YYMMDD);
 %if '&nnhdMieo.' = 'Y' %then %do;
 """
-spark.sql("""SQL
+sql_context.sql("""SQL
 CREATE MACRO INS_DATA(TST_D, END_DT, YYMMDD)
 BEGIN
 IF "&nnhdMieo. = 'Y'" THEN
@@ -382,7 +388,7 @@ END;
             AND MIS_DT<=&END_DT.;
     QUIT;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE SASUE_IA AS
 SELECT
   CAST(MIS_DT AS DATE9) AS MONTH,
@@ -403,7 +409,7 @@ WHERE D_UCWE IN ('AIA')
 """[converted]
     PROC SORT DATA=AUI_MSN_BASE; BY PLBRAN MONTH DESCENDING MIS_DT; RUN;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT *
 FROM AUI_MSN_BASE
 ORDER BY PLBRAN, MONTH DESC, MIS_DT;
@@ -412,7 +418,7 @@ ORDER BY PLBRAN, MONTH DESC, MIS_DT;
 """[converted]
     PROC SORT DATA=AUI_MSN_BASE NODUPKEY; BY PLBRAN MONTH; RUN;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE AUI_MSN_BASE_SORTED AS
 SELECT *
 FROM AUI_MSN_BASE
@@ -429,7 +435,7 @@ ORDER BY PLBRAN, MONTH;
         ORDER BY 1;
     QUIT;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE DATE_PARM AS
 SELECT MONTH
   ,MAX(MIS_DT) AS XAMM_SIP FORMAT date9.
@@ -441,7 +447,7 @@ ORDER BY 1;
 """[converted]
     PROC FREQ DATA=DATE_PARM; TABLE XAMM_IDT; RUN;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT
   COUNT(*) AS frequency
 FROM
@@ -460,7 +466,7 @@ GROUP BY
         ON A.MONTH = B.MONTH
     QUIT;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE AM_UNNS AS
 SELECT A.*,
 CASE WHEN A.MIS_DT <> B.XAMM_IDT THEN 0 ELSE TCT_Y_OE END AS O_MTELCT
@@ -487,7 +493,7 @@ ON A.MONTH = B.MONTH;
             AND MIS_DT<=&END_DT.;
     QUIT;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE i_aunns AS
 SELECT
   a.month,
@@ -512,7 +518,7 @@ WHERE
     %end;
 %if '&nnhdMieo.' = 'N' %then %do;
 """
-spark.sql("""
+sql_context.sql("""
 IF nnhdMieo = 'N' THEN
 """)
 
@@ -532,7 +538,7 @@ IF nnhdMieo = 'N' THEN
             AND MIS_DT<=&END_DT.;
     QUIT;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE SASUE_IA AS
 SELECT
   CAST(MIS_DT AS DATE) AS MONTH
@@ -551,7 +557,7 @@ WHERE D_UCWE IN ('AIA')
 """[converted]
     PROC SORT DATA=AUI_MSN_BASE; BY PLBRAN MIS_DT; RUN;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT *
 FROM AUI_MSN_BASE
 ORDER BY PLBRAN, MIS_DT;
@@ -562,7 +568,7 @@ ORDER BY PLBRAN, MIS_DT;
     BY MIS_DT;
     RUN;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT MIS_DT
 FROM AUI_MSN_BASE
 GROUP BY MIS_DT
@@ -574,7 +580,7 @@ ORDER BY MIS_DT;
     BY BNL_PRO;
     RUN;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT
   ISS_CSDR,
   PNPPLR_BA,
@@ -593,7 +599,7 @@ ORDER BY
     key = 1;
     run;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE MIS_DT (
   key INT NOT NULL
 );
@@ -609,7 +615,7 @@ FROM DUAL;
     key = 1;
     run;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE BNL_PRO (
   key INT NOT NULL,
   -- other columns
@@ -630,7 +636,7 @@ FROM BNL_PRO;
         on a.key = b.key;
     quit;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE S_ESAAM AS
 SELECT a.*,
        b.*
@@ -652,7 +658,7 @@ ON a.key = b.key;
         on a.BNL_PRO = b.BNL_PRO and a.mis_dt = b.mis_dt;
     quit;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE S_ESAAM AS
 SELECT a.*,
        b.*
@@ -671,7 +677,7 @@ ON a.BNL_PRO = b.BNL_PRO AND a.mis_dt = b.mis_dt;
     TPNMH = put(P_ITDMS, YYMMN6.);
     run;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE S_ESAAM (
   month VARCHAR(6),
   PRaLB1a VARCHAR(50),
@@ -696,7 +702,7 @@ FROM S_ESAAM;
     if MTELCT =. then MTELCT = 0;
     run;
 """
-spark.sql("""
+sql_context.sql("""
 -- Sort data by PNPLR_BA, MONTH, and descending MIS_DT
 
 SELECT *
@@ -739,7 +745,7 @@ WHERE MTELCT IS NULL
         AND A.MIS_DT <= &END_DT
     quit;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE i_aunns AS
 SELECT
   a.month,
@@ -779,7 +785,7 @@ WHERE
             A.PNPLR_BA = B.PNPPLR_BA;
     QUIT;
 """
-spark.sql("""
+sql_context.sql("""
 CREATE TABLE I_AUASN_U_MI AS
 SELECT A.*
 ,B.NCBL_TNR
@@ -803,7 +809,7 @@ A.PNPLR_BA = B.PNPPLR_BA;
         else CYC='ZXC';
     run;
 """
-spark.sql("""
+sql_context.sql("""
 SELECT
   ASN_U_MI,
   CASE
@@ -822,7 +828,7 @@ FROM
 """[converted]
 %INS_DATA('&STARTDT.'D, '&ENDDT.'D, &DATE.);
 """
-spark.sql("""
+sql_context.sql("""
 INSERT INTO DATA
 VALUES ('&STARTDT.'D, '&ENDDT.'D, &DATE.);
 """)
@@ -860,7 +866,7 @@ PROC SQL;
     DISCONNECT FROM &DINBLK.;
 QUIT;
 """
-spark.sql("""
+sql_context.sql("""
 -- SAS code to SQL translation
 
 -- PROC SQL

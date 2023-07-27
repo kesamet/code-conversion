@@ -15,7 +15,17 @@ def code_convert(input_filename: str, output_filename: str) -> None:
 
     subtexts = preprocess(text)
 
-    cleaned = ""
+    cleaned = (
+        """
+        # boilerplate code for spark
+        from src.utils.spark_conf import get_spark_sql_context
+
+        _, sql_context = get_spark_sql_context(
+            app_name="my_app"
+        )
+
+        """
+    )
     for i in tqdm(range(len(subtexts)), desc="Translating"):
         if len(subtexts[i]) > 10:
             translated = translate(subtexts[i])
