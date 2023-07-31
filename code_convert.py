@@ -2,6 +2,7 @@ import os
 
 import argparse
 from tqdm import tqdm
+
 from src.preprocess import preprocess
 from src.translate import translate
 
@@ -20,8 +21,7 @@ def code_convert(input_filename: str, output_filename: str) -> None:
 
     subtexts = preprocess(text)
 
-    cleaned = (
-        """# boilerplate code for spark
+    cleaned = """# boilerplate code for spark
 from src.utils.spark_conf import get_spark_sql_context
 
 _, sql_context = get_spark_sql_context(
@@ -29,7 +29,7 @@ _, sql_context = get_spark_sql_context(
 )
 
 """
-    )
+
     for i in tqdm(range(len(subtexts)), desc="Translating"):
         snippet = subtexts[i]
         if len(snippet) > MIN_LENGTH:
