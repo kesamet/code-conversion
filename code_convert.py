@@ -1,4 +1,3 @@
-import logging
 import os
 
 import argparse
@@ -6,38 +5,46 @@ from tqdm import tqdm
 from src.preprocess import preprocess
 from src.translate import translate
 
-logging.basicConfig(level=logging.INFO)
+MIN_LENGTH = 10
 
 
 def code_convert(input_filename: str, output_filename: str) -> None:
+    """Converts code to Python file.
+
+    Args:
+        input_filename (str): The path to the input file.
+        output_filename (str): The path to the output file.
+    """
     with open(input_filename, "r") as f:
         text = f.read()
 
     subtexts = preprocess(text)
 
     cleaned = (
-        """
-        # boilerplate code for spark
-        from src.utils.spark_conf import get_spark_sql_context
+        """# boilerplate code for spark
+from src.utils.spark_conf import get_spark_sql_context
 
-        _, sql_context = get_spark_sql_context(
-            app_name="my_app"
-        )
+_, sql_context = get_spark_sql_context(
+    app_name="my_app"
+)
 
-        """
+"""
     )
     for i in tqdm(range(len(subtexts)), desc="Translating"):
-        if len(subtexts[i]) > 10:
-            translated = translate(subtexts[i])
+        snippet = subtexts[i]
+        if len(snippet) > MIN_LENGTH:
+            translated = translate(snippet)
         else:
-            translated = None
+            translated = -1
 
         if translated is None or translated == "":
-            cleaned += f'"""[unable to convert]\n{subtexts[i]}\n"""\n\n'
+            cleaned += f'"""[unable to convert]\n{snippet}\n"""\n\n'
+        elif translated == -1:
+            cleaned += f'"""[not converted, too short]\n{snippet}\n"""\n\n'
         else:
-            cleaned += f'"""[converted]\n{subtexts[i]}\n"""\n'
+            cleaned += f'"""[converted]\n{snippet}\n"""\n'
             z = translated.replace("```sql", "").replace("```", "")
-            cleaned += 'spark.sql("""' + z + '""")\n\n'
+            cleaned += 'sql_context.sql("""' + z + '""")\n\n'
 
     with open(output_filename, "w") as f:
         f.write(cleaned)

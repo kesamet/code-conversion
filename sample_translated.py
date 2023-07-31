@@ -1,3 +1,4 @@
+# boilerplate code for spark
 from src.utils.spark_conf import get_spark_sql_context
 
 _, sql_context = get_spark_sql_context(
@@ -645,10 +646,6 @@ LEFT JOIN BNL_PRO AS b
 ON a.key = b.key;
 """)
 
-"""[unable to convert]
-    
-"""
-
 """[converted]
     proc sql;
     CREATE TABLE S_ESAAM AS
@@ -765,7 +762,7 @@ WHERE
   AND a.mis_dt <= &end_dt
 """)
 
-"""[unable to convert]
+"""[not converted, too short]
     %end;
 """
 
@@ -821,7 +818,7 @@ FROM
   ASN_U_MI;
 """)
 
-"""[unable to convert]
+"""[not converted, too short]
 %MEND;
 """
 
@@ -943,7 +940,7 @@ sql_context.sql("""
 -- QUIT;
 """)
 
-"""[unable to convert]
+"""[not converted, too short]
 RUN;
 """
 

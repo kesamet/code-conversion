@@ -2,6 +2,15 @@ from typing import List, Union
 
 
 def preprocess(text: str) -> List[str]:
+    """
+    Preprocess the text to split the code by macros and procs.
+
+    Args:
+        text (str): The text to preprocess.
+
+    Returns:
+        List[str]: The preprocessed text.
+    """
     rows = text.split("\n")
     rows_split = []
     for rows0 in split(rows, "%macro", "%mend"):
@@ -16,6 +25,20 @@ def split(
     start: Union[str, List[str]],
     end: Union[str, List[str]],
 ) -> List[List[str]]:
+    """Splits a list of rows into sublists based on a start and end string.
+
+    The start and end strings can be either a single string or a list of strings.
+    If a single string is provided, it will be used for both the start and end
+    strings.
+
+    Args:
+        rows: The list of rows to split.
+        start: The start string or list of strings.
+        end: The end string or list of strings.
+
+    Returns:
+        A list of sublists of rows.
+    """
     if isinstance(start, str):
         start = [start]
     else:
@@ -31,7 +54,7 @@ def split(
     subtexts = []
     tmp = []
     for x in rows:
-        if x == "":
+        if x.strip() == "":
             continue
         if any([s in x.lower() for s in start]):
             if len(tmp) > 0:

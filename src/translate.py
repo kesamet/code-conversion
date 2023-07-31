@@ -27,5 +27,13 @@ PROMPT = """How do I translate the following SAS code, delimited by triple backt
 
 
 def translate(text: str) -> str:
+    """Translates SAS code snippet to SQL.
+
+    Args:
+        text (str): The code to translate.
+
+    Returns:
+        str: The translated code.
+    """
     response = palm.generate_text(prompt=PROMPT.format(text), **DEFAULTS)
     return response.result
