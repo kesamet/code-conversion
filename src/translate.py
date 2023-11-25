@@ -22,7 +22,9 @@ DEFAULTS = {
     ],
 }
 
-PROMPT = """How do I translate the following SAS code, delimited by triple backticks, to SQL?
+PROMPT = """How do I translate the following SAS code, delimited by triple backticks, to Spark SQL? 
+Return the python code and make sure to prefix the requested python code with <startCode> exactly and 
+suffix the code with <endCode> exactly.
 ```{}```"""
 
 
