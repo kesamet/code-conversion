@@ -43,15 +43,20 @@ def get_spark_conf(**kwargs):
     :param kwargs: list of keyword arguments to specify settings in conf
     :return: spark configuration
     """
-    conf = SparkConf() \
-        .setMaster(kwargs.get('master', 'yarn-client')) \
-        .setAppName(kwargs.get('app_name', 'anonymous')) \
-        .set("spark.executor.memory", kwargs.get('executor_memory', '8g')) \
-        .set("spark.driver.maxResultSize", kwargs.get('max_result_size', '8g'))\
-        .set("spark.executor.instances", kwargs.get('num_executors', '12')) \
-        .set("spark.executor.cores", kwargs.get('num_cores', '3')) \
-        .set("spark.memory.fraction", kwargs.get('memory_fraction', '0.5')) \
-        .set("spark.yarn.executor.memoryOverhead", kwargs.get('executors_mem_overhead', 2560))
+    conf = (
+        SparkConf()
+        .setMaster(kwargs.get("master", "yarn-client"))
+        .setAppName(kwargs.get("app_name", "anonymous"))
+        .set("spark.executor.memory", kwargs.get("executor_memory", "8g"))
+        .set("spark.driver.maxResultSize", kwargs.get("max_result_size", "8g"))
+        .set("spark.executor.instances", kwargs.get("num_executors", "12"))
+        .set("spark.executor.cores", kwargs.get("num_cores", "3"))
+        .set("spark.memory.fraction", kwargs.get("memory_fraction", "0.5"))
+        .set(
+            "spark.yarn.executor.memoryOverhead",
+            kwargs.get("executors_mem_overhead", 2560),
+        )
+    )
     return conf
 
 

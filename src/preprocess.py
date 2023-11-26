@@ -11,13 +11,30 @@ def preprocess(text: str) -> List[str]:
     Returns:
         List[str]: The preprocessed text.
     """
-    rows = text.split("\n")
+    # Remove comments
+    rows = remove_comments(text.split("\n"))
+
+    # Split by macros and procs
     rows_split = []
     for rows0 in split(rows, "%macro", "%mend"):
         rows_split.extend(split(rows0, "proc", ["quit", "run"]))
 
     subtexts = ["\n".join(x) for x in rows_split]
     return subtexts
+
+
+def remove_comments(list_rows: List[str]) -> List[str]:
+    rows = []
+    is_comment = False
+    for row in list_rows:
+        if row.startswith("/*"):
+            is_comment = True
+        if is_comment:
+            if row.endswith("*/"):
+                is_comment = False
+        else:
+            rows.append(row)
+    return rows
 
 
 def split(
