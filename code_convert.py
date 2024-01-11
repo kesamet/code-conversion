@@ -4,9 +4,11 @@ import argparse
 from tqdm import tqdm
 
 from src.preprocess import preprocess
-from src.translate import translate
+from src.translate import Gemini
 
 MIN_LENGTH = 10
+
+LLM = Gemini()
 
 
 def code_convert(input_filename: str, output_filename: str) -> None:
@@ -32,8 +34,10 @@ _, sql_context = get_spark_sql_context(
 
     for i in tqdm(range(len(subtexts)), desc="Translating"):
         snippet = subtexts[i]
+        cleaned += f'"""[original]\n{snippet}\n"""\n'
+
         if len(snippet) > MIN_LENGTH:
-            translated = translate(snippet)
+            translated = LLM.translate(snippet)
         else:
             translated = -1
 
