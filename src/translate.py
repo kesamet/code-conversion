@@ -19,7 +19,8 @@ QUERY = """Translate the following SAS code, delimited by triple backticks, to S
 
 
 class Gemini:
-    def __init__(self):
+    def __init__(self, model_name: str = "gemini-pro"):
+        logging.info(f"Using {model_name} ...")
         genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
         generation_config = {
@@ -32,24 +33,24 @@ class Gemini:
         safety_settings = [
             {
                 "category": "HARM_CATEGORY_HARASSMENT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE",
             },
             {
                 "category": "HARM_CATEGORY_HATE_SPEECH",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE",
             },
             {
                 "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE",
             },
             {
                 "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            }
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE",
+            },
         ]
 
         self.model = genai.GenerativeModel(
-            model_name="gemini-pro",
+            model_name=model_name,
             generation_config=generation_config,
             safety_settings=safety_settings,
         )
