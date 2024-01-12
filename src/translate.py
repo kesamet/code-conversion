@@ -1,41 +1,91 @@
+import logging
 import os
+from typing import Dict
 
-import google.generativeai as palm
+import google.generativeai as genai
+from langchain.llms.ctransformers import CTransformers
+from langchain.prompts import PromptTemplate
+from langchain.schema import StrOutputParser
+from langchain.schema.runnable import RunnablePassthrough
 
-palm.configure(api_key=os.environ["PALM_API_KEY"])
+logging.basicConfig(level=logging.INFO)
 
-DEFAULTS = {
-    "model": "models/text-bison-001",
-    "temperature": 0.0,
-    "candidate_count": 1,
-    "top_k": 40,
-    "top_p": 0.95,
-    "max_output_tokens": 1024,
-    "stop_sequences": [],
-    "safety_settings": [
-        {"category": "HARM_CATEGORY_DEROGATORY", "threshold": 1},
-        {"category": "HARM_CATEGORY_TOXICITY", "threshold": 1},
-        {"category": "HARM_CATEGORY_VIOLENCE", "threshold": 2},
-        {"category": "HARM_CATEGORY_SEXUAL", "threshold": 2},
-        {"category": "HARM_CATEGORY_MEDICAL", "threshold": 2},
-        {"category": "HARM_CATEGORY_DANGEROUS", "threshold": 2},
-    ],
-}
+MODELS_DIR = "./models"
 
-PROMPT = """How do I translate the following SAS code, delimited by triple backticks, to Spark SQL? 
-Return the python code and make sure to prefix the requested python code with <startCode> exactly and 
-suffix the code with <endCode> exactly.
-```{}```"""
+QUERY = """Translate the following SAS code, delimited by triple backticks, to Spark SQL
+```sas
+{code_snippet}
+```"""
 
 
-def translate(text: str) -> str:
-    """Translates SAS code snippet to SQL.
+class Gemini:
+    def __init__(self, model_name: str = "gemini-pro"):
+        logging.info(f"Using {model_name} ...")
+        genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
-    Args:
-        text (str): The code to translate.
+        generation_config = {
+            "temperature": 0.4,
+            "top_p": 1,
+            "top_k": 32,
+            "max_output_tokens": 4096,
+        }
 
-    Returns:
-        str: The translated code.
-    """
-    response = palm.generate_text(prompt=PROMPT.format(text), **DEFAULTS)
-    return response.result
+        safety_settings = [
+            {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE",
+            },
+            {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE",
+            },
+            {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE",
+            },
+            {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE",
+            },
+        ]
+
+        self.model = genai.GenerativeModel(
+            model_name=model_name,
+            generation_config=generation_config,
+            safety_settings=safety_settings,
+        )
+
+    def translate(self, code_snippet: str) -> str:
+        query = QUERY.format(code_snippet=code_snippet)
+        response = self.model.generate_content(query)
+        return {"query": query, "result": response.result}
+
+
+def build_chain(model_path: str, model_type: str, template: str):
+    logging.info(f"Loading {model_path} ...")
+    model = CTransformers(
+        mode=model_path,
+        model_type=model_type,
+        config={
+            "max_new_tokens": 1024,
+            "temperature": 0.2,
+            "context_length": 2048,
+        },
+    )
+    prompt = PromptTemplate.from_template(template)
+    chain = {"query": RunnablePassthrough()} | prompt | model | StrOutputParser()
+    return chain
+
+
+class CodeLlama:
+    def __init__(self):
+        self.llm_chain = build_chain(
+            os.path.join(MODELS_DIR, "codellama-7b-instruct.Q2_K.gguf"),
+            "llama",
+            "<s>[INST] <<SYS>><</SYS>>\n{query}\nNo explanation is needed and wrap your code in ```. [/INST]",
+        )
+
+    def translate(self, code_snippet: str) -> Dict[str, str]:
+        query = QUERY.format(code_snippet=code_snippet)
+        result = self.llm_chain.invoke(query)
+        return {"query": query, "result": result}
